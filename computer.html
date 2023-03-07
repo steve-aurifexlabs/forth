@@ -1,10 +1,155 @@
-<pre></pre>
+
+<link rel="stylesheet" href="style.css">
+
+<pre class="minimap"></pre>
+<pre class="registers">Start...</pre>
+<button class="pause">Resume (paused)</button>
+<button class="step lit">Single Step</button>
+<button class="fast">Fast Mode is off</button>
+<br>
+<label for="break-label">Break on Label:</label>
+<input class="break-label" type="text" name="break-label" value="next">
+<p class="error"></p>
+<pre class="memory"></pre>
+
+
 
 <script src="bits.js"></script>
+<script src="cpu.js"></script>
 <script src="assembler.js"></script>
 <script src="forth0.js"></script>
+<script src="forth1.js"></script>
+<script src="forth2.js"></script>
+<script src="forth3.js"></script>
 
 <script>
-    var pre = document.querySelector('pre')
-    pre.innerText = assemble(forth0)
+    var errorMessage = document.querySelector('.error')
+    var registersElement = document.querySelector('pre.registers')
+    var memoryElement = document.querySelector('pre.memory')
+    var minimap = document.querySelector('pre.minimap')
+    
+    var source = [forth0, forth1, forth2, forth3].join('\n')
+    var binary = Assembler.assemble(source)
+    
+    memoryElement.innerHTML = binary
+    minimap.innerHTML = binary
+
+    var cpu = Cpu.new()
+    Cpu.loadMemory(cpu, binary)
+
+    var fastMode = false
+    var breakLabel
+    var label
+
+    function animationCallback() {
+        breakLabel = document.querySelector('input.break-label').value
+
+        if(!paused) {
+            if(!fastMode) {
+                label = addresses[Bits.toString(cpu.state.pc)]
+
+                if(breakLabel == label && cpu.state.controlState[0]) {
+                    //pauseButton.disabled = true
+                    pause()
+                    
+                } else {
+                    singleStep()
+                }
+            }
+            
+            else {
+                for(var i = 0; i <10; i++) {
+                    label = addresses[Bits.toString(cpu.state.pc)]
+        
+                    // console.log(breakLabel, label)
+                    if(breakLabel === label && cpu.state.controlState[0]) {
+                        //pauseButton.disabled = true
+                        pause()
+                        continue
+                    }
+                    
+                    singleStep()
+                }
+            }
+
+            render()
+        }
+
+        //memoryElement.innerHTML = memoryElement.innerHTML.replace(':')
+
+        var animationPeriod = fastMode ? 50 : 50
+        setTimeout(animationCallback, animationPeriod)
+    }
+    animationCallback()
+    
+    function singleStep() {
+        try {
+            Cpu.step(cpu)            
+        } catch(error) {
+            render()
+            errorMessage.innerText = error
+            throw new Error(error)
+        }
+    }
+
+    function render() {
+        registersElement.innerText = 'controlState:                   ' + Bits.toString(cpu.state.controlState) + ' (' + (cpu.state.controlState[0] ? 'execute' : 'fetch') + ')'
+        registersElement.innerText += '\npc:                ' + Bits.toString(cpu.state.pc) + ' (' + Assembler.disassemble(cpu.state.pc) + ')'
+        registersElement.innerText += '\ninstruction:  ' + Bits.toString(cpu.state.instruction) + ' (' + Assembler.disassemble(cpu.state.instruction) + ')'
+        registersElement.innerText += '\naccumulator:       ' + Bits.toString(cpu.state.accumulator) + ' (' + Assembler.disassemble(cpu.state.accumulator) + ')'
+        registersElement.innerText += '\naccumulator2:      ' + Bits.toString(cpu.state.accumulator2) + ' (' + Assembler.disassemble(cpu.state.accumulator2) + ')'
+
+        // console.log(cpu.state.pc, cpu.state.instruction, cpu.state.accumulator, cpu.state.accumulator2)
+    
+        var lines = memoryElement.innerHTML.split('\n')
+        lines.forEach(function(line, i) {
+            if(lines[i].startsWith('<b>')) {
+                lines[i] = lines[i].slice(3)
+            }
+
+            if(lines[i].endsWith('</b>')) {
+                lines[i] = lines[i].slice(0,-4)
+            }
+
+            if(lines[i].startsWith(Bits.toString(cpu.state.pc))) {
+                lines[i] = '<b>' + lines[i] + '</b>'
+            }
+        })
+
+        minimap.innerHTML = lines.join('\n')
+        memoryElement.innerHTML = lines.join('\n')
+    }
+
+    var paused = true
+    var pauseButton = document.querySelector('button.pause')
+    var stepButton = document.querySelector('button.step')
+    var fastButton = document.querySelector('button.fast')
+    
+    pauseButton.addEventListener('click', function() {
+        singleStep()
+        render()
+        pause()
+    })
+
+    function pause() {
+        paused = !paused
+        pauseButton.classList.toggle('lit')
+        //pauseButton.style.backgroundColor = paused ? '#8f7' : 'f87'
+        pauseButton.innerText = paused ? 'Resume (paused)' : 'Pause (running)'
+        stepButton.style.backgroundColor = paused ? '#8f7' : 'aaa'
+        stepButton.disabled = !paused
+    }
+
+    stepButton.addEventListener('click', function() {
+        singleStep()
+        singleStep()
+        render()
+    })
+
+    fastButton.addEventListener('click', function() {
+        fastMode = !fastMode
+        fastButton.classList.toggle('lit')
+        //style.backgroundColor = fastMode ? '#f87' : '8f7'
+        fastButton.innerText = fastMode ? 'Fast Mode is on' : 'Fast Mode is off'
+    })
 </script>

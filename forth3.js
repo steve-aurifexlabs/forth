@@ -48,15 +48,4 @@ FROMR_assembly: load returnStackPointer
 
     : jump next
 
-
-_link: data _link
-_flags: 0000 0000 0000 0000
-_length: 0000 0000 0000 1000
-_name0: 0000 0000 0101 0001  // F
-_name1: 0000 0000 0101 0101  // I
-_name2: 0000 0000 0100 1001  // N
-_name3: 0000 0000 0101 0100  // D
-: data _assembly
-_assembly:
-
-`
+hereStartsHere: 0000 0000 0000 0000`

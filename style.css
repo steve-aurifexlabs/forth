@@ -1,0 +1,62 @@
+body {
+    background: url('epaper.png')
+}
+
+pre {
+    outline: 1px solid #888;
+    padding: 5px;
+    max-width: 50%;
+    min-height: 140px;
+    background: #fff;
+}
+
+pre.registers {
+    font-size: 175%;
+    outline: none;
+}
+
+pre.memory {
+    max-height: 95%;
+    overflow: scroll;
+    max-width: 40%;
+    position: fixed;
+    top: 5px;
+    right: 350px;
+}
+
+pre.minimap {
+    position: fixed;
+    top: 5px;
+    right: 15px;
+    font-size: 10%;
+    overflow: scroll;
+    max-height: 95%;
+    max-width: 300px;
+}
+
+button {
+    background: #fff;
+    font-size: 150%;
+    border-radius: 10px;
+    padding: 15px;
+    font-family: monospace;
+    box-shadow: 1px 1px 1px 1px #888;
+    outline: 1px solid #888;
+}
+
+label, input {
+    font-size: 150%;
+    margin: 20px;
+}
+
+.lit {
+    background: #8f7;
+}
+
+.error {
+    color: rgb(255, 34, 0);
+    font-family: monospace;
+    font-size: 150%;
+    max-width: 50%;
+    min-height: 60px;
+}

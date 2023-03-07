@@ -1,8 +1,13 @@
-function assemble(source) {
+
+var Assembler = {}
+var addresses
+
+Assembler.assemble = function(source) {
     const wordSize = Bits.value('0000 0000 0010')
     var cursor = Bits.value('0000 0000 0000')
 
     var labels = {}
+    addresses = {}
 
     var sourceLines = source.split('\n')
     var lines = source.split('\n')
@@ -14,6 +19,7 @@ function assemble(source) {
 
             if(label) {
                 labels[label] = Bits.toString(cursor)
+                addresses[Bits.toString(cursor)] = label
             }
 
             lines[i] = Bits.toString(cursor) + ': '
@@ -48,6 +54,30 @@ function assemble(source) {
     source = lines.join('\n')
 
     return source
+}
+
+Assembler.disassemble = function(value) {
+    if(value.length == 12) {
+        if(addresses[Bits.toString(value)]) {
+            var label = addresses[Bits.toString(value)]
+            return label
+        }
+    }
+
+    else if(value.length == 16) {
+        var result = ''
+        result += getOpName(Bits.toString(value.slice(0, 4))) + ' '
+
+        if(addresses[Bits.toString(value.slice(4))]) {
+            var label = addresses[Bits.toString(value.slice(4))]
+            result += label
+        } else {
+            result += Bits.toString(value.slice(4))
+        }
+
+        return result
+    }
+
 }
 
 function getOpcode(op) {
@@ -90,4 +120,46 @@ function getOpcode(op) {
     }
 
     return opcode
+}
+
+function getOpName(opcode) {
+    var op
+
+    if(opcode == '0000') {
+        op = 'data'
+    } else if(opcode == '0001') {
+        op = 'immediate'
+    } else if(opcode == '0010') {
+        op = 'add'
+    } else if(opcode == '0011') {
+        op = 'subtract'
+    } else if(opcode == '0100') {
+        op = 'and'
+    } else if(opcode == '0101') {
+        op = 'or'
+    } else if(opcode == '0110') {
+        op = 'not'
+    } else if(opcode == '0111') {
+        op = 'load'
+    } else if(opcode == '1000') {
+        op = 'store'
+    } else if(opcode == '1001') {
+        op = 'jump'
+    } else if(opcode == '1010') {
+        op = 'branchZero'
+    } else if(opcode == '1011') {
+        op = 'branchNegative'
+    } else if(opcode == '1100') {
+        op = 'loadIndirect'
+    } else if(opcode == '1101') {
+        op = 'storeIndirect'
+    } else if(opcode == '1110') {
+        op = 'jumpIndirect'
+    } else if(opcode == '1111') {
+        op = 'storeOpcode'
+    } else {
+        op = opcode
+    }
+
+    return op
 }
