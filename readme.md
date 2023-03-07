@@ -1,3 +1,10 @@
+
+Based on Jones Forth.
+
+To Run
+------
+Open computer.html
+
 Notes
 -----
 
