@@ -100,33 +100,6 @@ ROT_assembly: load parameterStackPointer
 
     : jump next
 
-SUB_link: data ADD_link
-SUB_flags: 0000 0000 0000 0000
-SUB_length: 0000 0000 0000 0010
-SUB_name0: 0000 0000 0101 0001  // -
-SUB: data SUB_assembly
-SUB_assembly: load parameterStackPointer
-    : load zero
-    : loadIndirect
-    : store temp0
-
-    : load parameterStackPointer
-    : add parameterSize
-    : load zero
-    : loadIndirect
-
-    : subtract temp0
-    : store temp1
-
-    : load parameterStackPointer
-    : subtract parameterSize
-    : store parameterStackPointer
-
-    : load temp1
-    : storeIndirect
-
-    : jump next
-
 EQU_link: data SUB_link
 EQU_flags: 0000 0000 0000 0000
 EQU_length: 0000 0000 0000 0010
@@ -154,47 +127,6 @@ EQU_done: store temp1
     : store parameterStackPointer
 
     : load temp1
-    : storeIndirect
-
-    : jump next
-
-STORE_link: data LIT_link
-STORE_flags: 0000 0000 0000 0000
-STORE_length: 0000 0000 0000 1000
-STORE_name0: 0000 0000 0101 0001  // !
-STORE: data STORE_assembly
-STORE_assembly: load parameterStackPointer
-    : load zero
-    : loadIndirect
-    : store temp0
-
-    : load parameterStackPointer
-    : add parameterSize
-    : load zero
-    : loadIndirect
-
-    : load temp0
-    : storeIndirect
-
-    : load parameterStackPointer
-    : add parameterSize
-    : add parameterSize
-    : store parameterStackPointer
-
-    : jump next
-
-FETCH_link: data STORE_link
-FETCH_flags: 0000 0000 0000 0000
-FETCH_length: 0000 0000 0000 0010
-FETCH_name0: 0000 0000 0101 0001  // @
-FETCH: data FETCH_assembly
-FETCH_assembly: load parameterStackPointer
-    : load zero
-    : loadIndirect
-
-    : load parameterStackPointer
-    : loadIndirect
-
     : storeIndirect
 
     : jump next

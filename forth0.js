@@ -9,8 +9,11 @@ _name3: 0000 0000 0101 0100  // D
 _assembly:
 `
 
-var forth0 = `zero: 0000 0000 0000 0000
-one: 0000 0000 0000 0001
+var forth0 = `zero: 0000 0000 0000 0000  // (0000)
+one: 0000 0000 0000 0001  // (0010)
+
+input: 0000 0000 0000 0000  // (0100) memory mapped IO
+output: 0000 0000 0000 0000  // (0110) memory mapped IO
 
 temp0: 0000 0000 0000 0000
 temp1: 0000 0000 0000 0000
@@ -23,17 +26,20 @@ charSize: 0000 0000 0000 0010
 
 coldStartPointer: data TEST
 nextPointer: data coldStartPointer
+codeword: 0000 0000 0000 0000
+currentPointer: 0000 0000 0000 0000
+
 latestPointer: data FROMR_link
 herePointer: data hereStartsHere
 compilingState: 0000 0000 0000 0000
+
 returnStackPointer: 0000 1111 0000 0000
 parameterStackPointer: 0000 1110 0000 0000
 
-input: 0000 0000 0101 0001
-output: 0000 0000 0000 0000
 
-codeword: 0000 0000 0000 0000
-currentPointer: 0000 0000 0000 0000
+
+literal: 0000 0000 0000 0000
+offset: 0000 0000 0000 0000
 
 next: load nextPointer  // advance the next pointer
     : store currentPointer
@@ -93,12 +99,12 @@ LIT: data LIT_assembly
 LIT_assembly: load nextPointer  // load literal
     : load zero
     : loadIndirect
-    : store temp0
+    : store literal
     
     : load parameterStackPointer // push -> pstack
     : subtract parameterSize
     : store parameterStackPointer
-    : load temp0
+    : load literal
     : storeIndirect
 
     : load nextPointer  // skip over literal
@@ -144,13 +150,13 @@ ADD_assembly: load parameterStackPointer
     : loadIndirect
 
     : add temp0
-    : store temp1
+    : store temp0
 
     : load parameterStackPointer
-    : subtract parameterSize
+    : add parameterSize
     : store parameterStackPointer
 
-    : load temp1
+    : load temp0
     : storeIndirect
 
     : jump next
@@ -193,11 +199,62 @@ TEST: data doColon
 TEST_0: data LIT
 TEST_1: 0000 0000 0000 0101
 TEST_2: data QUAD
-TEST_3: data done
+    : data TEST_done
 
-done: data done_1
-done_1: load zero
-done_2: branchZero done_1
+TEST_done: data TEST_done_1
+TEST_done_1: load zero
+TEST_done_2: branchZero TEST_done_1
+
+FETCH_link: data TEST_link
+FETCH_flags: 0000 0000 0000 0000
+FETCH_length: 0000 0000 0000 0010
+FETCH_name0: 0000 0000 0101 0001  // @
+FETCH: data FETCH_assembly
+FETCH_assembly: load parameterStackPointer
+    : load zero
+    : loadIndirect
+
+    : load parameterStackPointer
+    : loadIndirect
+
+    : storeIndirect
+
+    : jump next
+
+BRANCH_link: data SUB_link
+BRANCH_flags: 0000 0000 0000 0000
+BRANCH_length: 0000 0000 0000 0010
+BRANCH_name0: 0000 0000 0101 0001  // @
+BRANCH: data BRANCH_assembly
+BRANCH_assembly: load nextPointer  // load offset
+    : load zero
+    : loadIndirect
+    : store offset
+    
+    : load nextPointer
+    : add offset
+    : store nextPointer
+
+    : jump next
+
+ZBRANCH_link: data FETCH_link
+ZBRANCH_flags: 0000 0000 0000 0000
+ZBRANCH_length: 0000 0000 0000 0010
+ZBRANCH_name0: 0000 0000 0101 0001  // 0
+ZBRANCH_name0: 0000 0000 0101 0001  // B
+ZBRANCH_name0: 0000 0000 0101 0001  // R
+ZBRANCH_name0: 0000 0000 0101 0001  // A
+ZBRANCH_name0: 0000 0000 0101 0001  // N
+ZBRANCH_name0: 0000 0000 0101 0001  // C
+ZBRANCH_name0: 0000 0000 0101 0001  // H
+ZBRANCH: data ZBRANCH_assembly
+ZBRANCH_assembly: load parameterStackPointer
+    : load zero
+    : loadIndirect
+    
+    : branchZero ZBRANCH_true
+    : jump next
+ZBRANCH_true: jump BRANCH_assembly
 
 KEY_link: data TEST_link
 KEY_flags: 0000 0000 0000 0000
@@ -205,17 +262,64 @@ KEY_length: 0000 0000 0000 1000
 KEY_name0: 0000 0000 0101 0001  // K
 KEY_name1: 0000 0000 0101 0101  // E
 KEY_name2: 0000 0000 0100 1001  // Y
-KEY: data KEY_assembly
-KEY_assembly: load input
-    : branchZero KEY_assembly
-KEY_key: 0000 0000 0000 0000
-    : store KEY_key
+KEY: data doColon
+    : data LIT
+    : data input
+    : data FETCH
+    : data ZBRANCH
+    : 0000 1111 1111 0100
+    : data EXIT
 
-    : load parameterStackPointer  // push onto parameter stack
-    : subtract pointerSize
+SUB_link: data ADD_link
+SUB_flags: 0000 0000 0000 0000
+SUB_length: 0000 0000 0000 0010
+SUB_name0: 0000 0000 0101 0001  // -
+SUB: data SUB_assembly
+SUB_assembly: load parameterStackPointer
+    : load zero
+    : loadIndirect
+    : store temp0
+
+    : load parameterStackPointer
+    : add parameterSize
+    : load zero
+    : loadIndirect
+
+    : subtract temp0
+    : store temp0
+
+    : load parameterStackPointer
+    : subtract parameterSize
     : store parameterStackPointer
-    : load KEY_key
+
+    : load temp0
     : storeIndirect
+
+    : jump next
+
+
+STORE_link: data LIT_link
+STORE_flags: 0000 0000 0000 0000
+STORE_length: 0000 0000 0000 1000
+STORE_name0: 0000 0000 0101 0001  // !
+STORE: data STORE_assembly
+STORE_assembly: load parameterStackPointer
+    : load zero
+    : loadIndirect
+    : store temp0
+
+    : load parameterStackPointer
+    : add parameterSize
+    : load zero
+    : loadIndirect
+
+    : load temp0
+    : storeIndirect
+
+    : load parameterStackPointer
+    : add parameterSize
+    : add parameterSize
+    : store parameterStackPointer
 
     : jump next
 
@@ -226,15 +330,20 @@ WORD_name0: 0000 0000 0101 0001  // W
 WORD_name1: 0000 0000 0101 0101  // O
 WORD_name2: 0000 0000 0100 1001  // R
 WORD_name3: 0000 0000 0101 0100  // D
-WORD: data WORD_assembly
-WORD_assembly: jump KEY_assembly
-    : load parameterStackPointer  // pop parameter stack
-    : subtract pointerSize
-    : store parameterStackPointer
-    : load KEY_key
-    : storeIndirect
+WORD: data doColon
+    : data KEY
+    : data LIT
+    : 0000 0000 0010 0000  // compare to " " (ascii decimal 32)
+    : data SUB
+    : data ZBRANCH
+    : 0000 0000 0000 0100 // need to store the keys here
+    : data BRANCH
+    : 0000 1111 1110 1110
+    : data 
+    : data STORE
+    : data EXIT
+WORD_var_bufferAddress: 0000 1101 1000 0000
 
-WORD_bufferAddress: 0000 1101 1000 0000
 
 INTERPRET_link: data WORD_link
 INTERPRET_flags: 0000 0000 0000 0000
@@ -249,8 +358,8 @@ INTERPRET_name6: 0000 0000 0101 0100  // R
 INTERPRET_name7: 0000 0000 0101 0100  // E
 INTERPRET_name8: 0000 0000 0101 0100  // T
 INTERPRET: data doColon
-    : data WORD
-    : jump next
+    : data WORD // TODO - FIND NUMBER COMMA
+    : data EXIT
 
 QUIT_link: data INTERPRET_link
 QUIT_flags_length: 0000 0000 0000 1000
@@ -259,8 +368,9 @@ QUIT_name1: 0000 0000 0101 0101  // U
 QUIT_name2: 0000 0000 0100 1001  // I
 QUIT_name3: 0000 0000 0101 0100  // T
 QUIT: data doColon
-    data INTERPRET
-    data LOOP
+    : data INTERPRET
+    : data BRANCH
+    : 0000 1111 1111 1010
 
 
 FIND_link: data QUIT_link

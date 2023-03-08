@@ -1,18 +1,24 @@
 
 <link rel="stylesheet" href="style.css">
 
+<h1>Forth Machine</h1>
 <pre class="minimap"></pre>
 <pre class="registers">Start...</pre>
 <button class="pause">Resume (paused)</button>
 <button class="step lit">Single Step</button>
-<button class="fast">Fast Mode is off</button>
+<button class="fast">Fast Mode is off (20IPS)</button>
 <br>
 <label for="break-label">Break on Label:</label>
-<input class="break-label" type="text" name="break-label" value="done_2">
+<input class="break-label" type="text" name="break-label" value="TEST_done_2">
 <p class="error"></p>
 <pre class="memory"></pre>
-
-
+<pre class="output"></pre>
+<pre class="input-buffer"></pre>
+<form class="input-form">
+    <label for="input">Input:</label>
+    <input type="text" name="input" class="input" autofocus value="5 QUAD">
+    <button type="submit" class="send-input">Send Input to Buffer</button>
+</form>
 
 <script src="bits.js"></script>
 <script src="cpu.js"></script>
@@ -35,7 +41,29 @@
     minimap.innerHTML = binary
 
     var cpu = Cpu.new()
+
     Cpu.loadMemory(cpu, binary)
+
+    var outputElement = document.querySelector('pre.output')
+    var inputBuffer = document.querySelector('.input-buffer')
+    var inputElement = document.querySelector('.input')
+    var inputForm = document.querySelector('.input-form')
+    
+    Cpu.outputCallback = function(char) {
+        outputElement.innerHTML += char
+    }
+
+    Cpu.inputCallback = function() {
+        var char = inputBuffer.innerText[0]
+        inputBuffer.innerText = inputBuffer.innerText.slice(1)
+        return char
+    }
+
+    inputForm.addEventListener('submit', function(event) {
+        event.preventDefault()
+        inputBuffer.innerText += inputElement.value
+        inputElement.value = ''
+    })
 
     var fastMode = false
     var breakLabel
@@ -58,7 +86,7 @@
             }
             
             else {
-                for(var i = 0; i <10; i++) {
+                for(var i = 0; i < 50 /*500*/; i++) {
                     label = addresses[Bits.toString(cpu.state.pc)]
         
                     // console.log(breakLabel, label)
@@ -93,53 +121,53 @@
     }
 
     function render() {
-        registersElement.innerText = 'controlState:                    ' + Bits.toString(cpu.state.controlState) + ' (' + (cpu.state.controlState[0] ? 'execute' : 'fetch') + ')'
-        registersElement.innerText += '\npc:                 ' + Bits.toString(cpu.state.pc) + ' (' + Assembler.disassemble(cpu.state.pc) + ')'
-        registersElement.innerText += '\ninstruction:   ' + Bits.toString(cpu.state.instruction) + ' (' + Assembler.disassemble(cpu.state.instruction) + ')'
-        registersElement.innerText += '\naccumulator:        ' + Bits.toString(cpu.state.accumulator) + ' (' + Assembler.disassemble(cpu.state.accumulator) + ')'
-        registersElement.innerText += '\naccumulator2:       ' + Bits.toString(cpu.state.accumulator2) + ' (' + Assembler.disassemble(cpu.state.accumulator2) + ')'
+        registersElement.innerHTML = 'controlState:                    ' + Bits.toString(cpu.state.controlState) + ' (' + (cpu.state.controlState[0] ? 'execute' : 'fetch') + ')'
+        registersElement.innerHTML += '\n<b>pc:                 ' + Bits.toString(cpu.state.pc) + ' (' + Assembler.disassemble(cpu.state.pc) + ')</b>'
+        registersElement.innerHTML += '\ninstruction:   ' + Bits.toString(cpu.state.instruction) + ' (' + Assembler.disassemble(cpu.state.instruction) + ')'
+        registersElement.innerHTML += '\naccumulator:        ' + Bits.toString(cpu.state.accumulator) + ' (' + Assembler.disassemble(cpu.state.accumulator) + ')'
+        registersElement.innerHTML += '\naccumulator2:       ' + Bits.toString(cpu.state.accumulator2) + ' (' + Assembler.disassemble(cpu.state.accumulator2) + ')'
 
         var nextPointer = cpu.state.memory[labels.nextPointer].slice(5)
-        registersElement.innerText += '\n\nnextPointer: ' + nextPointer + ' (' + Assembler.disassemble(Bits.value(nextPointer)) + ')'
+        registersElement.innerHTML += '\n\n<span class="next">nextPointer: ' + nextPointer + ' (' + Assembler.disassemble(Bits.value(nextPointer)) + ')</span>'
         
         var codeword = cpu.state.memory[labels.codeword].slice(5)
-        registersElement.innerText += '\ncodeword: ' + codeword + ' (' + Assembler.disassemble(Bits.value(codeword)) + ')'
+        registersElement.innerHTML += '\n<span class="codeword">codeword: ' + codeword + ' (' + Assembler.disassemble(Bits.value(codeword)) + ')</span>'
         
         var returnStackPointer = cpu.state.memory[labels.returnStackPointer].slice(5)
-        registersElement.innerText += '\n\nreturnStackPointer: ' + returnStackPointer
+        registersElement.innerHTML += '\n\nreturnStackPointer: ' + returnStackPointer
         
         var stackVar = Bits.value(cpu.state.memory[returnStackPointer])
-        registersElement.innerText += '\nreturnStack+0:      ' + Bits.toString(stackVar) + ' (' + Assembler.disassemble(stackVar) + ')'
+        registersElement.innerHTML += '\nreturnStack+0:      ' + Bits.toString(stackVar) + ' (' + Assembler.disassemble(stackVar) + ')'
         
         var sp = Bits.add(Bits.value(returnStackPointer), Bits.value('0000 0000 0010')).sum
         stackVar = Bits.value(cpu.state.memory[Bits.toString(sp)])
-        registersElement.innerText += '\nreturnStack+2:      ' + Bits.toString(stackVar) + ' (' + Assembler.disassemble(stackVar) + ')'
+        registersElement.innerHTML += '\nreturnStack+2:      ' + Bits.toString(stackVar) + ' (' + Assembler.disassemble(stackVar) + ')'
 
         sp = Bits.add(Bits.value(returnStackPointer), Bits.value('0000 0000 0100')).sum
         stackVar = Bits.value(cpu.state.memory[Bits.toString(sp)])
-        registersElement.innerText += '\nreturnStack+4:      ' + Bits.toString(stackVar) + ' (' + Assembler.disassemble(stackVar) + ')'
+        registersElement.innerHTML += '\nreturnStack+4:      ' + Bits.toString(stackVar) + ' (' + Assembler.disassemble(stackVar) + ')'
 
         sp = Bits.add(Bits.value(returnStackPointer), Bits.value('0000 0000 0110')).sum
         stackVar = Bits.value(cpu.state.memory[Bits.toString(sp)])
-        registersElement.innerText += '\nreturnStack+6:      ' + Bits.toString(stackVar) + ' (' + Assembler.disassemble(stackVar) + ')'
+        registersElement.innerHTML += '\nreturnStack+6:      ' + Bits.toString(stackVar) + ' (' + Assembler.disassemble(stackVar) + ')'
 
         var parameterStackPointer = cpu.state.memory[labels.parameterStackPointer].slice(5)
-        registersElement.innerText += '\n\nparameterStackPointer: ' + parameterStackPointer
+        registersElement.innerHTML += '\n\nparameterStackPointer: ' + parameterStackPointer
         
         stackVar = Bits.value(cpu.state.memory[parameterStackPointer])
-        registersElement.innerText += '\nparameterStack+0:      ' + Bits.toString(stackVar) + ' (' + Bits.toNumber(stackVar) + ')'
+        registersElement.innerHTML += '\nparameterStack+0:      ' + Bits.toString(stackVar) + ' (' + Bits.toNumber(stackVar) + ')'
         
         sp = Bits.add(Bits.value(parameterStackPointer), Bits.value('0000 0000 0010')).sum
         stackVar = Bits.value(cpu.state.memory[Bits.toString(sp)])
-        registersElement.innerText += '\nparameterStack+2:      ' + Bits.toString(stackVar) + ' (' + Bits.toNumber(stackVar) + ')'
+        registersElement.innerHTML += '\nparameterStack+2:      ' + Bits.toString(stackVar) + ' (' + Bits.toNumber(stackVar) + ')'
 
         sp = Bits.add(Bits.value(parameterStackPointer), Bits.value('0000 0000 0100')).sum
         stackVar = Bits.value(cpu.state.memory[Bits.toString(sp)])
-        registersElement.innerText += '\nparameterStack+4:      ' + Bits.toString(stackVar) + ' (' + Bits.toNumber(stackVar) + ')'
+        registersElement.innerHTML += '\nparameterStack+4:      ' + Bits.toString(stackVar) + ' (' + Bits.toNumber(stackVar) + ')'
 
         sp = Bits.add(Bits.value(parameterStackPointer), Bits.value('0000 0000 0110')).sum
         stackVar = Bits.value(cpu.state.memory[Bits.toString(sp)])
-        registersElement.innerText += '\nparameterStack+6:      ' + Bits.toString(stackVar) + ' (' + Bits.toNumber(stackVar) + ')'
+        registersElement.innerHTML += '\nparameterStack+6:      ' + Bits.toString(stackVar) + ' (' + Bits.toNumber(stackVar) + ')'
 
 
         // console.log(cpu.state.pc, cpu.state.instruction, cpu.state.accumulator, cpu.state.accumulator2)
@@ -154,8 +182,31 @@
                 lines[i] = lines[i].slice(0,-4)
             }
 
+            if(lines[i].startsWith('<span class="codeword">')) {
+                lines[i] = lines[i].slice('<span class="codeword">'.length)
+            }
+
+            if(lines[i].startsWith('<span class="next">')) {
+                lines[i] = lines[i].slice('<span class="next">'.length)
+            }
+
+            if(lines[i].endsWith('</span>')) {
+                lines[i] = lines[i].slice(0,-('</span>'.length))
+            }
+            if(lines[i].endsWith('</span>')) {
+                lines[i] = lines[i].slice(0,-('</span>'.length))
+            }
+
             if(lines[i].startsWith(Bits.toString(cpu.state.pc))) {
                 lines[i] = '<b>' + lines[i] + '</b>'
+            }
+
+            if(lines[i].startsWith(codeword)) {
+                lines[i] = '<span class="codeword">' + lines[i] + '</span>'
+            }
+
+            if(lines[i].startsWith(nextPointer)) {
+                lines[i] = '<span class="next">' + lines[i] + '</span>'
             }
         })
 
@@ -193,6 +244,8 @@
         fastMode = !fastMode
         fastButton.classList.toggle('lit')
         //style.backgroundColor = fastMode ? '#f87' : '8f7'
-        fastButton.innerText = fastMode ? 'Fast Mode is on' : 'Fast Mode is off'
+        fastButton.innerText = fastMode ? 'Fast Mode is on (1KIPS)' : 'Fast Mode is off (20IPS)'
     })
+
+    pause()
 </script>

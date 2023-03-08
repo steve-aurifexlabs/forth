@@ -2,17 +2,21 @@ body {
     background: url('epaper.png')
 }
 
+h1 {
+    font-family: monospace;
+}
+
 pre {
     outline: 1px solid #888;
     padding: 5px;
     margin: 5px;
-    max-width: 50%;
+    max-width: 45%;
     min-height: 140px;
     background: #fff;
 }
 
 pre.registers {
-    font-size: 175%;
+    font-size: 125%;
     outline: none;
 }
 
@@ -46,8 +50,10 @@ button {
 }
 
 label, input {
-    font-size: 150%;
+    font-size: 125%;
     margin: 20px;
+    font-family: monospace;
+    padding: 10px;
 }
 
 .lit {
@@ -59,5 +65,19 @@ label, input {
     font-family: monospace;
     font-size: 150%;
     max-width: 50%;
-    min-height: 60px;
+    min-height: 10px;
+}
+
+.input-buffer {
+    height: 25px;
+    min-height: initial;
+    font-size: 125%;
+}
+
+.codeword {
+    color: #283;
+}
+
+.next {
+    color: #34f;
 }

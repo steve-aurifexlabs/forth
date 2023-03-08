@@ -20,6 +20,11 @@ Cpu.reset = function(cpu) {
     state.memory = {}
 }
 
+Cpu.memoryMappedIO = {
+    input: Bits.value('0000 0000 0100'),
+    output: Bits.value('0000 0000 0110'),
+}
+
 Cpu.loadMemory = function(cpu, binary) {
     var lines = binary.split('\n')
     lines.forEach(function(line) {
@@ -35,10 +40,20 @@ Cpu.loadMemory = function(cpu, binary) {
 }
 
 Cpu.readMemory = function(memory, address) {
-    return Bits.value(memory[Bits.toString(address)])
+    if(Bits.equal(address, Cpu.memoryMappedIO.input)) {
+        return Bits.fromChar(Cpu.inputCallback())
+    }
+
+    else {
+        return Bits.value(memory[Bits.toString(address)])
+    }
 }
 
 Cpu.writeMemory = function(memory, address, value) {
+    if(Bits.equal(address, Cpu.memoryMappedIO.output)) {
+        Cpu.outputCallback(Bits.toChar(value))
+    }
+    
     memory[Bits.toString(address)] = Bits.toString(value)
 }
 

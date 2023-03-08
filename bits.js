@@ -197,3 +197,24 @@ Bits.add = function(operandA, operandB, carry) {
         carry: carry,
     }
 }
+
+
+Bits.toChar = function(bits) {
+    if(!bits) {
+        return undefined
+    }
+
+    return String.fromCharCode(Bits.toNumber(bits))
+}
+
+Bits.fromChar = function(char) {
+    var result = []
+
+    while(char) {
+        result.push(char % 2 ? true : false)
+        char = char >> 1
+    }
+
+    return result
+}
+
