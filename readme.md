@@ -2,6 +2,11 @@
 
 To Run
 ------
+
+[Live demo](https://aurifexlabs.com/forth/computer.html)
+
+or
+
 - Clone repo
 - Open computer.html
 
