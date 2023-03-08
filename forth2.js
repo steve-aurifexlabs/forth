@@ -39,27 +39,6 @@ SWAP_assembly: load parameterStackPointer
 
     : jump next
 
-DUP_link: data SWAP_link
-DUP_flags: 0000 0000 0000 0000
-DUP_length: 0000 0000 0000 0110
-DUP_name0: 0000 0000 0101 0100  // D
-DUP_name1: 0000 0000 0101 0101  // U
-DUP_name2: 0000 0000 0101 0000  // P
-DUP: data DUP_assembly
-DUP_assembly: load parameterStackPointer
-    : load zero
-    : loadIndirect
-    : store temp0
-    
-    : load parameterStackPointer
-    : subtract parameterSize
-    : store parameterStackPointer
-
-    : load temp0
-    : storeIndirect
-
-    : jump next
-
 OVER_link: data DUP_link
 OVER_flags: 0000 0000 0000 0000
 OVER_length: 0000 0000 0000 1000
@@ -116,33 +95,6 @@ ROT_assembly: load parameterStackPointer
     : load parameterStackPointer
     : add parameterSize
     : add parameterSize
-    : load temp1
-    : storeIndirect
-
-    : jump next
-
-ADD_link: data ROT_link
-ADD_flags: 0000 0000 0000 0000
-ADD_length: 0000 0000 0000 0010
-ADD_name0: 0000 0000 0101 0001  // +
-ADD: data ADD_assembly
-ADD_assembly: load parameterStackPointer
-    : load zero
-    : loadIndirect
-    : store temp0
-
-    : load parameterStackPointer
-    : add parameterSize
-    : load zero
-    : loadIndirect
-
-    : add temp0
-    : store temp1
-
-    : load parameterStackPointer
-    : subtract parameterSize
-    : store parameterStackPointer
-
     : load temp1
     : storeIndirect
 
