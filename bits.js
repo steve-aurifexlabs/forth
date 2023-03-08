@@ -15,6 +15,10 @@ Bits.zero = function(length) {
 Bits.value = function(value) {
     var result = []
 
+    if(!value) {
+       return undefined
+    }
+
     Array.from(value).forEach(function(bit) {
         if(bit == ' ') {
             return
@@ -31,6 +35,10 @@ Bits.value = function(value) {
 
 Bits.toString = function(bits) {
     var result = []
+
+    if(!bits) {
+        return undefined
+    }
 
     bits.forEach(function(bit, n) {
         if(bit) {
@@ -49,6 +57,23 @@ Bits.toString = function(bits) {
     }
 
     return result.join('')
+}
+
+Bits.toNumber = function(bits) {
+    if(!bits) {
+        return undefined
+    }
+
+    var result = 0
+    var sig = 0
+    bits.reverse().forEach(function(bit, n) {
+        if(bit) {
+            result += 2 ** sig
+        }
+        sig += 1
+    })
+
+    return result
 }
 
 Bits.equal = function(operandA, operandB) {

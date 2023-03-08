@@ -5,6 +5,7 @@ body {
 pre {
     outline: 1px solid #888;
     padding: 5px;
+    margin: 5px;
     max-width: 50%;
     min-height: 140px;
     background: #fff;
@@ -18,16 +19,16 @@ pre.registers {
 pre.memory {
     max-height: 95%;
     overflow: scroll;
-    max-width: 40%;
+    max-width: 35%;
     position: fixed;
     top: 5px;
-    right: 350px;
+    right: 248px;
 }
 
 pre.minimap {
     position: fixed;
     top: 5px;
-    right: 15px;
+    right: 75px;
     font-size: 10%;
     overflow: scroll;
     max-height: 95%;

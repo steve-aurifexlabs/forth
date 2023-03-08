@@ -1,12 +1,13 @@
 
 var Assembler = {}
 var addresses
+var labels
 
 Assembler.assemble = function(source) {
     const wordSize = Bits.value('0000 0000 0010')
     var cursor = Bits.value('0000 0000 0000')
 
-    var labels = {}
+    labels = {}
     addresses = {}
 
     var sourceLines = source.split('\n')
@@ -57,6 +58,10 @@ Assembler.assemble = function(source) {
 }
 
 Assembler.disassemble = function(value) {
+    if(!value) {
+        return undefined
+    }
+    
     if(value.length == 12) {
         if(addresses[Bits.toString(value)]) {
             var label = addresses[Bits.toString(value)]

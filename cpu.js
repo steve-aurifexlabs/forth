@@ -115,6 +115,7 @@ Cpu.step = function(cpu) {
         // 0111 load
         else if(Bits.equal(opcode, Bits.value('0111'))) {
             var dataIn = Cpu.readMemory(state.memory, address)
+            //console.log(dataIn)
             dataIn = dataIn.slice(4)
             state.accumulator2 = state.accumulator
             state.accumulator = dataIn
@@ -123,7 +124,8 @@ Cpu.step = function(cpu) {
 
         // 1000 store
         else if(Bits.equal(opcode, Bits.value('1000'))) {
-            Cpu.writeMemory(state.memory, address, state.accumulator)
+            //console.log(state.accumulator)
+            Cpu.writeMemory(state.memory, address, Bits.zero(4).concat(state.accumulator))
             state.pc = Bits.add(state.pc, Bits.value('0000 0000 0010')).sum
         }
 
@@ -161,7 +163,7 @@ Cpu.step = function(cpu) {
 
         // 1101 storeIndirect
         else if(Bits.equal(opcode, Bits.value('1101'))) {
-            Cpu.writeMemory(state.memory, state.accumulator2, state.accumulator)
+            Cpu.writeMemory(state.memory, state.accumulator2, Bits.zero(4).concat(state.accumulator))
             state.pc = Bits.add(state.pc, Bits.value('0000 0000 0010')).sum
         }
 
