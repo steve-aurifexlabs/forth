@@ -1,5 +1,30 @@
 var forth2 = `
 
+STORE_link: data NUMBER_link
+STORE_flags: 0000 0000 0000 0000
+STORE_length: 0000 0000 0000 1000
+STORE_name0: 0000 0000 0101 0001  // !
+STORE: data STORE_assembly
+STORE_assembly: load parameterStackPointer
+    : load zero
+    : loadIndirect
+    : store temp0
+
+    : load parameterStackPointer
+    : add parameterSize
+    : load zero
+    : loadIndirect
+
+    : load temp0
+    : storeIndirect
+
+    : load parameterStackPointer
+    : add parameterSize
+    : add parameterSize
+    : store parameterStackPointer
+
+    : jump NEXT
+
 OVER_link: data DUP_link
 OVER_flags: 0000 0000 0000 0000
 OVER_length: 0000 0000 0000 1000
