@@ -430,6 +430,10 @@ FIND_name1: 0000 0000 0100 1001  // I
 FIND_name2: 0000 0000 0100 1110  // N
 FIND_name3: 0000 0000 0100 0100  // D
 FIND: data DOCOL
+    : data LIT
+    : data latestPointer
+    : data FETCH
+    : 
 
 
 
