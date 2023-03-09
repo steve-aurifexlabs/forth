@@ -1,43 +1,4 @@
 var forth2 = `
-DROP_link: 0000 0000 0000 0000
-DROP_flags: 0000 0000 0000 0000
-DROP_length: 0000 0000 0000 1000
-DROP_name0: 0000 0000 0100 0100  // D
-DROP_name1: 0000 0000 0101 0010  // R
-DROP_name2: 0000 0000 0100 1111  // O
-DROP_name3: 0000 0000 0101 0000  // P
-DROP: data DROP_assembly
-DROP_assembly: load parameterStackPointer
-    : add parameterSize
-    : store parameterStackPointer
-
-    : jump next
-
-SWAP_link: data DROP_link
-SWAP_flags: 0000 0000 0000 0000
-SWAP_length: 0000 0000 0000 1000
-SWAP_name0: 0000 0000 0101 0011  // S
-SWAP_name1: 0000 0000 0101 0111  // W
-SWAP_name2: 0000 0000 0100 0001  // A
-SWAP_name3: 0000 0000 0101 0000  // P
-SWAP: data SWAP_assembly
-SWAP_assembly: load parameterStackPointer
-    : load zero
-    : loadIndirect
-    : store temp0
-
-    : load parameterStackPointer
-    : add parameterSize
-    : load zero
-    : loadIndirect
-    : store parameterStackPointer
-
-    : load parameterStackPointer
-    : add parameterSize
-    : load temp0
-    : storeIndirect
-
-    : jump next
 
 OVER_link: data DUP_link
 OVER_flags: 0000 0000 0000 0000

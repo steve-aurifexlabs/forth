@@ -24,7 +24,7 @@ pointerSize: 0000 0000 0000 0010
 parameterSize: 0000 0000 0000 0010
 charSize: 0000 0000 0000 0010
 
-coldStartPointer: data TEST
+coldStartPointer: data QUIT
 nextPointer: data coldStartPointer
 codeword: 0000 0000 0000 0000
 currentPointer: 0000 0000 0000 0000
@@ -35,8 +35,6 @@ compilingState: 0000 0000 0000 0000
 
 returnStackPointer: 0000 1111 0000 0000
 parameterStackPointer: 0000 1110 0000 0000
-
-
 
 literal: 0000 0000 0000 0000
 offset: 0000 0000 0000 0000
@@ -253,7 +251,13 @@ ZBRANCH_assembly: load parameterStackPointer
     : loadIndirect
     
     : branchZero ZBRANCH_true
+
+ZBRANCH_false: load nextPointer  // skip offset
+    : add pointerSize
+    : store nextPointer
+
     : jump next
+
 ZBRANCH_true: jump BRANCH_assembly
 
 KEY_link: data TEST_link
@@ -267,8 +271,11 @@ KEY: data doColon
     : data input
     : data FETCH
     : data ZBRANCH
-    : 0000 1111 1111 0100
+    : 0000 0000 0000 0100
     : data EXIT
+KEY_null: data DROP
+    : data BRANCH
+    : 0000 1111 1111 0000
 
 SUB_link: data ADD_link
 SUB_flags: 0000 0000 0000 0000
@@ -289,7 +296,7 @@ SUB_assembly: load parameterStackPointer
     : store temp0
 
     : load parameterStackPointer
-    : subtract parameterSize
+    : add parameterSize
     : store parameterStackPointer
 
     : load temp0
@@ -297,13 +304,29 @@ SUB_assembly: load parameterStackPointer
 
     : jump next
 
+DROP_link: 0000 0000 0000 0000
+DROP_flags: 0000 0000 0000 0000
+DROP_length: 0000 0000 0000 1000
+DROP_name0: 0000 0000 0100 0100  // D
+DROP_name1: 0000 0000 0101 0010  // R
+DROP_name2: 0000 0000 0100 1111  // O
+DROP_name3: 0000 0000 0101 0000  // P
+DROP: data DROP_assembly
+DROP_assembly: load parameterStackPointer
+    : add parameterSize
+    : store parameterStackPointer
 
-STORE_link: data LIT_link
-STORE_flags: 0000 0000 0000 0000
-STORE_length: 0000 0000 0000 1000
-STORE_name0: 0000 0000 0101 0001  // !
-STORE: data STORE_assembly
-STORE_assembly: load parameterStackPointer
+    : jump next
+
+SWAP_link: data DROP_link
+SWAP_flags: 0000 0000 0000 0000
+SWAP_length: 0000 0000 0000 1000
+SWAP_name0: 0000 0000 0101 0011  // S
+SWAP_name1: 0000 0000 0101 0111  // W
+SWAP_name2: 0000 0000 0100 0001  // A
+SWAP_name3: 0000 0000 0101 0000  // P
+SWAP: data SWAP_assembly
+SWAP_assembly: load parameterStackPointer
     : load zero
     : loadIndirect
     : store temp0
@@ -312,16 +335,42 @@ STORE_assembly: load parameterStackPointer
     : add parameterSize
     : load zero
     : loadIndirect
+    : store temp1
 
-    : load temp0
+    : load parameterStackPointer
+    : load temp1
     : storeIndirect
 
     : load parameterStackPointer
     : add parameterSize
-    : add parameterSize
-    : store parameterStackPointer
+    : load temp0
+    : storeIndirect
 
     : jump next
+
+INCR_link: data KEY_link
+INCR_flags: 0000 0000 0000 0000
+INCR_length: 0000 0000 0000 1000
+INCR_name0: 0000 0000 0101 0001  // 1
+INCR_name1: 0000 0000 0101 0101  // +
+INCR: data doColon
+    : data LIT
+    : 0000 0000 0000 0001
+    : data ADD
+    : data EXIT
+    
+TWODROP_link: data KEY_link
+TWODROP_flags: 0000 0000 0000 0000
+TWODROP_length: 0000 0000 0000 1000
+TWODROP_name0: 0000 0000 0101 0001  // 2
+TWODROP_name1: 0000 0000 0101 0101  // D
+TWODROP_name0: 0000 0000 0101 0001  // R
+TWODROP_name1: 0000 0000 0101 0101  // O
+TWODROP_name0: 0000 0000 0101 0001  // P
+TWODROP: data doColon
+    : data DROP
+    : data DROP
+    : data EXIT
 
 WORD_link: data KEY_link
 WORD_flags: 0000 0000 0000 0000
@@ -331,18 +380,26 @@ WORD_name1: 0000 0000 0101 0101  // O
 WORD_name2: 0000 0000 0100 1001  // R
 WORD_name3: 0000 0000 0101 0100  // D
 WORD: data doColon
-    : data KEY
+    : data LIT  // Put string length (0) on stack 
+    : 0000 0000 0000 0000
+
+WORD_key_loop: data KEY  // Read input
+    : data DUP
     : data LIT
     : 0000 0000 0010 0000  // compare to " " (ascii decimal 32)
     : data SUB
     : data ZBRANCH
-    : 0000 0000 0000 0100 // need to store the keys here
+    : 0000 0000 0000 1010
+
+WORD_continue: data DROP
+    : data SWAP
+    : data INCR
     : data BRANCH
-    : 0000 1111 1110 1110
-    : data 
-    : data STORE
+    : 0000 1111 1110 1010
+
+WORD_space: data DROP
+    : data SWAP
     : data EXIT
-WORD_var_bufferAddress: 0000 1101 1000 0000
 
 
 INTERPRET_link: data WORD_link
@@ -371,7 +428,6 @@ QUIT: data doColon
     : data INTERPRET
     : data BRANCH
     : 0000 1111 1111 1010
-
 
 FIND_link: data QUIT_link
 FIND_flags: 0000 0000 0000 0000
@@ -442,5 +498,30 @@ NUMBER_name4: 0000 0000 0101 0100  // E
 NUMBER_name5: 0000 0000 0101 0100  // R
 NUMBER: data NUMBER_assembly
 NUMBER_assembly: jump next
+
+STORE_link: data LIT_link
+STORE_flags: 0000 0000 0000 0000
+STORE_length: 0000 0000 0000 1000
+STORE_name0: 0000 0000 0101 0001  // !
+STORE: data STORE_assembly
+STORE_assembly: load parameterStackPointer
+    : load zero
+    : loadIndirect
+    : store temp0
+
+    : load parameterStackPointer
+    : add parameterSize
+    : load zero
+    : loadIndirect
+
+    : load temp0
+    : storeIndirect
+
+    : load parameterStackPointer
+    : add parameterSize
+    : add parameterSize
+    : store parameterStackPointer
+
+    : jump next
 
 `

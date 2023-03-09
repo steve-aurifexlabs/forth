@@ -39,7 +39,7 @@ Bits
 The cpu and assembler depend on this tiny library for bit vector representation,
 arithmetic, and logic.
 
-See bits.js. It's also under 200 lines of JS and designed to be ultra portable.
+See bits.js. It's also around 200 lines of JS and designed to be ultra portable.
 
 - Simple array of booleans
 - Truth table based arithmetic and logic (add, subtract, and, or, not, equal)

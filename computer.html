@@ -6,7 +6,7 @@
 <pre class="registers">Start...</pre>
 <button class="pause">Resume (paused)</button>
 <button class="step lit">Single Step</button>
-<button class="fast">Fast Mode is off (20IPS)</button>
+<button class="fast">Fast Mode is off (10IPS)</button>
 <br>
 <label for="break-label">Break on Label:</label>
 <input class="break-label" type="text" name="break-label" value="TEST_done_2">
@@ -16,7 +16,7 @@
 <pre class="input-buffer"></pre>
 <form class="input-form">
     <label for="input">Input:</label>
-    <input type="text" name="input" class="input" autofocus value="5 QUAD">
+    <input type="text" name="input" class="input" autofocus value="HELLO">
     <button type="submit" class="send-input">Send Input to Buffer</button>
 </form>
 
@@ -54,8 +54,12 @@
     }
 
     Cpu.inputCallback = function() {
-        var char = inputBuffer.innerText[0]
-        inputBuffer.innerText = inputBuffer.innerText.slice(1)
+        var char = inputBuffer.innerText[0] || '\0'
+        
+        if(char) {
+            inputBuffer.innerText = inputBuffer.innerText.slice(1)
+        }
+        
         return char
     }
 
@@ -155,19 +159,19 @@
         registersElement.innerHTML += '\n\nparameterStackPointer: ' + parameterStackPointer
         
         stackVar = Bits.value(cpu.state.memory[parameterStackPointer])
-        registersElement.innerHTML += '\nparameterStack+0:      ' + Bits.toString(stackVar) + ' (' + Bits.toNumber(stackVar) + ')'
+        registersElement.innerHTML += '\nparameterStack+0:      ' + Bits.toString(stackVar) + ' | num: ' + Bits.toNumber(stackVar) + ' char: ' + Bits.toChar(stackVar)
         
         sp = Bits.add(Bits.value(parameterStackPointer), Bits.value('0000 0000 0010')).sum
         stackVar = Bits.value(cpu.state.memory[Bits.toString(sp)])
-        registersElement.innerHTML += '\nparameterStack+2:      ' + Bits.toString(stackVar) + ' (' + Bits.toNumber(stackVar) + ')'
+        registersElement.innerHTML += '\nparameterStack+2:      ' + Bits.toString(stackVar) + ' | num: ' + Bits.toNumber(stackVar) + ' char: ' + Bits.toChar(stackVar)
 
         sp = Bits.add(Bits.value(parameterStackPointer), Bits.value('0000 0000 0100')).sum
         stackVar = Bits.value(cpu.state.memory[Bits.toString(sp)])
-        registersElement.innerHTML += '\nparameterStack+4:      ' + Bits.toString(stackVar) + ' (' + Bits.toNumber(stackVar) + ')'
+        registersElement.innerHTML += '\nparameterStack+4:      ' + Bits.toString(stackVar) + ' | num: ' + Bits.toNumber(stackVar) + ' char: ' + Bits.toChar(stackVar)
 
         sp = Bits.add(Bits.value(parameterStackPointer), Bits.value('0000 0000 0110')).sum
         stackVar = Bits.value(cpu.state.memory[Bits.toString(sp)])
-        registersElement.innerHTML += '\nparameterStack+6:      ' + Bits.toString(stackVar) + ' (' + Bits.toNumber(stackVar) + ')'
+        registersElement.innerHTML += '\nparameterStack+6:      ' + Bits.toString(stackVar) + ' | num: ' + Bits.toNumber(stackVar) + ' char: ' + Bits.toChar(stackVar)
 
 
         // console.log(cpu.state.pc, cpu.state.instruction, cpu.state.accumulator, cpu.state.accumulator2)
@@ -244,7 +248,7 @@
         fastMode = !fastMode
         fastButton.classList.toggle('lit')
         //style.backgroundColor = fastMode ? '#f87' : '8f7'
-        fastButton.innerText = fastMode ? 'Fast Mode is on (1KIPS)' : 'Fast Mode is off (20IPS)'
+        fastButton.innerText = fastMode ? 'Fast Mode is on (500IPS)' : 'Fast Mode is off (10IPS)'
     })
 
     pause()

@@ -59,23 +59,6 @@ Bits.toString = function(bits) {
     return result.join('')
 }
 
-Bits.toNumber = function(bits) {
-    if(!bits) {
-        return undefined
-    }
-
-    var result = 0
-    var sig = 0
-    bits.reverse().forEach(function(bit, n) {
-        if(bit) {
-            result += 2 ** sig
-        }
-        sig += 1
-    })
-
-    return result
-}
-
 Bits.equal = function(operandA, operandB) {
     var result = true
 
@@ -198,6 +181,37 @@ Bits.add = function(operandA, operandB, carry) {
     }
 }
 
+Bits.toNumber = function(bits) {
+    if(!bits) {
+        return undefined
+    }
+
+    var result = 0
+    var sig = 0
+    bits.reverse().forEach(function(bit, n) {
+        if(bit) {
+            result += 2 ** sig
+        }
+        sig += 1
+    })
+
+    bits.reverse()
+
+    return result
+}
+
+Bits.fromNumber = function(char) {
+    var result = []
+
+    for(var i = 0; i < 8; i++) {
+        result.push(char % 2 ? true : false)
+        char = char >> 1
+    }
+
+    result = result.reverse()
+
+    return result
+}
 
 Bits.toChar = function(bits) {
     if(!bits) {
@@ -208,13 +222,11 @@ Bits.toChar = function(bits) {
 }
 
 Bits.fromChar = function(char) {
-    var result = []
-
-    while(char) {
-        result.push(char % 2 ? true : false)
-        char = char >> 1
+    if(!char) {
+        return undefined
     }
 
-    return result
+    return Bits.fromNumber(char.charCodeAt(0))
 }
+
 

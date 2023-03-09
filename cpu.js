@@ -41,7 +41,11 @@ Cpu.loadMemory = function(cpu, binary) {
 
 Cpu.readMemory = function(memory, address) {
     if(Bits.equal(address, Cpu.memoryMappedIO.input)) {
-        return Bits.fromChar(Cpu.inputCallback())
+        var input = Cpu.inputCallback()
+        console.log(input)
+        var result = Bits.value('0000 0000').concat(Bits.fromChar(input))
+        console.log(result)
+        return result
     }
 
     else {
